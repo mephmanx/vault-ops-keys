@@ -55,6 +55,7 @@ fi
 
 if [ ! -z "$KEYS_LIST" ]; then
   # write default keys to property file and use it for future requests
+
   KEYS_LIST=$(cat ~/.keys-list)
   if [ -z "$KEYS_LIST" ]; then
     echo "Missing keysList"
