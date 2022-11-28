@@ -76,9 +76,7 @@ fi
 if [ -z "$KEYS_LIST" ]; then
   # write default keys to property file and use it for future requests
   PROJECT_VERSION="$(brew info dotcomrow/sharedops/"$PROJECT_NAME" --json | jq -r '.[0].versions.stable' | sed "s/\"//g")"
-  echo "Version: $PROJECT_VERSION"
   KEYS_LIST="$(cat "$(brew --cellar dotcomrow/sharedops/"$PROJECT_NAME")"/"$PROJECT_VERSION"/files/keys.properties)"
-  echo "Keys: $KEYS_LIST"
   if [ -z "$KEYS_LIST" ]; then
     echo "Missing keys List"
     exit 1
@@ -87,6 +85,5 @@ fi
 
 vault login -address="$VAULT_TARGET" -method=github -path=github_"$GITHUB_ORG" token="$GITHUB_TOKEN"
 for key in $KEYS_LIST; do
-  echo "$key"
   bash -c "echo '------------------------------------------------'; echo \"Key: $key\"; vault read -address=\"$VAULT_TARGET\" \"$key\"; echo '------------------------------------------------'; wait;" &
 done
