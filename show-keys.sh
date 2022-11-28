@@ -75,7 +75,7 @@ fi
 
 if [ ! -z "$KEYS_LIST" ]; then
   # write default keys to property file and use it for future requests
-  PROJECT_VERSION="$(brew info dotcomrow/sharedops/"$PROJECT_NAME" --json | jq '.[0].versions.stable')"
+  PROJECT_VERSION="$(brew info dotcomrow/sharedops/"$PROJECT_NAME" --json | jq -r '.[0].versions.stable' | sed "s/\"//g")"
   KEYS_LIST="$(cat "$(brew --cellar dotcomrow/sharedops/"$PROJECT_NAME")"/"$PROJECT_VERSION"/files/keys.properties)"
   if [ -z "$KEYS_LIST" ]; then
     echo "Missing keys List"
