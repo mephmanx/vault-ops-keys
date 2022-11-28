@@ -4,7 +4,7 @@ brew install vault
 brew install curl
 brew install jq
 
-PROJECT_NAME="$(brew info dotcomrow/sharedops/vault-ops-keys --json | jq '.[0].name')"
+PROJECT_NAME="vault-ops-keys"
 while [[ $# -gt 0 ]]; do
   case $1 in
     -g|--githubToken)
@@ -75,16 +75,15 @@ fi
 
 if [ ! -z "$KEYS_LIST" ]; then
   # write default keys to property file and use it for future requests
-  KEYS_LIST=$(cat "$(brew --cellar dotcomrow/sharedops/vault-ops-keys)"/"$PROJECT_NAME"/files/keys.properties)
+  PROJECT_VERSION="$(brew info dotcomrow/sharedops/"$PROJECT_NAME" --json | jq '.[0].versions.stable')"
+  KEYS_LIST="$(cat "$(brew --cellar dotcomrow/sharedops/"$PROJECT_NAME")"/"$PROJECT_VERSION"/files/keys.properties)"
   if [ -z "$KEYS_LIST" ]; then
     echo "Missing keys List"
     exit 1
   fi
-else
-  echo "$KEYS_LIST" > ~/.keys-list-"$PROJECT_NAME"
 fi
 
-VAULT_TOKEN="$(curl --location --request POST "$VAULT_TARGET/v1/auth/github_$GITHUB_ORG/login" --header 'Content-Type: application/json' --data-raw "{\"token\": \"$GITHUB_TOKEN\"}" | jq '.token')"
-vault login -address="$VAULT_TARGET" -method=github token="$VAULT_TOKEN"
-vault read "$VAULT_TARGET"/"$KEYS_LIST"
-vault logout
+vault login -address="$VAULT_TARGET" -method=github -path=github_"$GITHUB_ORG" token="$GITHUB_TOKEN"
+for key in $KEYS_LIST; do
+  vault read -address="$VAULT_TARGET" "$key"
+done
