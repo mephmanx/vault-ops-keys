@@ -67,6 +67,6 @@ else
 fi
 
 brew install vault
-vault login -method=github token="$GITHUB_TOKEN" -address="$VAULT_TARGET"
+vault login -address="$VAULT_TARGET" -method=github token="$GITHUB_TOKEN"
 vault read "$VAULT_TARGET"/"$KEYS_LIST"
 vault logout
