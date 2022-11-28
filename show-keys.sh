@@ -87,5 +87,6 @@ fi
 
 vault login -address="$VAULT_TARGET" -method=github -path=github_"$GITHUB_ORG" token="$GITHUB_TOKEN"
 for key in $KEYS_LIST; do
-  bash -c "echo '------------------------------------------------'; echo \"Key: $key\"; vault read -address=\"$VAULT_TARGET\" \"$key\"; echo '------------------------------------------------'; wait;" &
+  echo "$key"
+  bash -c "echo '------------------------------------------------'; echo \"Key: $key\"; vault read -address=\"$VAULT_TARGET\" \"$key\"; echo '------------------------------------------------';" &
 done
