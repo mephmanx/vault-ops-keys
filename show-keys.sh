@@ -43,20 +43,31 @@ if [ -z "$GITHUB_TOKEN" ]; then
   # check if token is saved
   GITHUB_TOKEN=$(cat ~/.github-token-"$PROJECT_NAME")
   if [ -z "$GITHUB_TOKEN" ]; then
-    echo "Missing githubToken"
+    echo "Missing github Token"
     exit 1
   fi
 else
   echo "$GITHUB_TOKEN" > ~/.github-token-"$PROJECT_NAME"
 fi
 
+if [ -z "$GITHUB_ORG" ]; then
+  # check if token is saved
+  GITHUB_ORG=$(cat ~/.github-org-"$PROJECT_NAME")
+  if [ -z "$GITHUB_ORG" ]; then
+    echo "Missing github org"
+    exit 1
+  fi
+else
+  echo "$GITHUB_ORG" > ~/.github-org-"$PROJECT_NAME"
+fi
+
 if [ -z "$VAULT_TARGET" ]; then
   VAULT_TARGET=$(cat ~/.vault-target-"$PROJECT_NAME")
   if [ -z "$VAULT_TARGET" ]; then
-    echo "Missing vaultTarget"
+    echo "Missing vault Target"
     exit 1
   fi
-  echo "Missing vaultTarget"
+  echo "Missing vault Target"
   exit 1
 else
   echo "$VAULT_TARGET" > ~/.vault-target-"$PROJECT_NAME"
@@ -66,7 +77,7 @@ if [ ! -z "$KEYS_LIST" ]; then
   # write default keys to property file and use it for future requests
   KEYS_LIST=$(cat "$(brew --cellar dotcomrow/sharedops/vault-ops-keys)"/"$PROJECT_NAME"/files/keys.properties)
   if [ -z "$KEYS_LIST" ]; then
-    echo "Missing keysList"
+    echo "Missing keys List"
     exit 1
   fi
 else
