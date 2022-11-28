@@ -1,6 +1,7 @@
 #!/bin/bash
 
 PROJECT_NAME="vault-ops-keys"
+PROJECT_VERSION="1.1"
 while [[ $# -gt 0 ]]; do
   case $1 in
     -g|--githubToken)
@@ -56,7 +57,7 @@ fi
 if [ ! -z "$KEYS_LIST" ]; then
   # write default keys to property file and use it for future requests
 
-  KEYS_LIST=$(cat ~/.keys-list)
+  KEYS_LIST=$(cat "$(brew --cellar dotcomrow/sharedops/vault-ops-keys)"/$PROJECT_VERSION/files/keys.properties)
   if [ -z "$KEYS_LIST" ]; then
     echo "Missing keysList"
     exit 1
