@@ -1,7 +1,10 @@
 #!/bin/bash
 
-PROJECT_NAME="vault-ops-keys"
-PROJECT_VERSION="1.1"
+brew install vault
+brew install curl
+brew install jq
+
+PROJECT_NAME="$(brew info dotcomrow/sharedops/vault-ops-keys --json | jq '.[0].name')"
 while [[ $# -gt 0 ]]; do
   case $1 in
     -g|--githubToken)
@@ -19,6 +22,11 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift
       ;;
+    -o|--githubOrg)
+      GITHUB_ORG="$2"
+      shift # past argument
+      shift
+      ;;
     -h|--help)
       echo "Usage: show-keys.sh -g|--githubToken <githubToken> -t|--vaultTarget <vaultTarget> -k|--keysList <keysList>"
       shift # past argument
@@ -33,17 +41,17 @@ done
 
 if [ -z "$GITHUB_TOKEN" ]; then
   # check if token is saved
-  GITHUB_TOKEN=$(cat ~/.github-token)
+  GITHUB_TOKEN=$(cat ~/.github-token-"$PROJECT_NAME")
   if [ -z "$GITHUB_TOKEN" ]; then
     echo "Missing githubToken"
     exit 1
   fi
 else
-  echo "$GITHUB_TOKEN" > ~/.github-token-$PROJECT_NAME
+  echo "$GITHUB_TOKEN" > ~/.github-token-"$PROJECT_NAME"
 fi
 
 if [ -z "$VAULT_TARGET" ]; then
-  VAULT_TARGET=$(cat ~/.vault-target)
+  VAULT_TARGET=$(cat ~/.vault-target-"$PROJECT_NAME")
   if [ -z "$VAULT_TARGET" ]; then
     echo "Missing vaultTarget"
     exit 1
@@ -51,22 +59,21 @@ if [ -z "$VAULT_TARGET" ]; then
   echo "Missing vaultTarget"
   exit 1
 else
-  echo "$VAULT_TARGET" > ~/.vault-target-$PROJECT_NAME
+  echo "$VAULT_TARGET" > ~/.vault-target-"$PROJECT_NAME"
 fi
 
 if [ ! -z "$KEYS_LIST" ]; then
   # write default keys to property file and use it for future requests
-
-  KEYS_LIST=$(cat "$(brew --cellar dotcomrow/sharedops/vault-ops-keys)"/$PROJECT_VERSION/files/keys.properties)
+  KEYS_LIST=$(cat "$(brew --cellar dotcomrow/sharedops/vault-ops-keys)"/"$PROJECT_NAME"/files/keys.properties)
   if [ -z "$KEYS_LIST" ]; then
     echo "Missing keysList"
     exit 1
   fi
 else
-  echo "$KEYS_LIST" > ~/.keys-list-$PROJECT_NAME
+  echo "$KEYS_LIST" > ~/.keys-list-"$PROJECT_NAME"
 fi
 
-brew install vault
-vault login -address="$VAULT_TARGET" -method=github token="$GITHUB_TOKEN"
+VAULT_TOKEN="$(curl --location --request POST "$VAULT_TARGET/v1/auth/github_$GITHUB_ORG/login" --header 'Content-Type: application/json' --data-raw "{\"token\": \"$GITHUB_TOKEN\"}" | jq '.token')"
+vault login -address="$VAULT_TARGET" -method=github token="$VAULT_TOKEN"
 vault read "$VAULT_TARGET"/"$KEYS_LIST"
 vault logout
